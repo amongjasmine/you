@@ -1,0 +1,90 @@
+<svg viewBox="0 0 800 500" xmlns="http://www.w3.org/2000/svg" style="background:#f5f0e8; font-family: 'Georgia', serif;">
+
+  <!-- sky / paper texture suggestion -->
+  <rect width="800" height="500" fill="#f5f0e8"/>
+  
+  <!-- LEFT PANEL: THE WAVE -->
+  <text x="200" y="48" text-anchor="middle" font-size="11" fill="#888" letter-spacing="3" font-style="italic">the wave</text>
+
+  <!-- water body, left -->
+  <path d="M 20 320 Q 80 280 140 310 Q 200 340 260 300 Q 310 270 360 300 L 360 420 L 20 420 Z" fill="#b8cdd9" opacity="0.5"/>
+  
+  <!-- wave form dissolving into shore — no edge, just gradient merge -->
+  <path d="M 60 300 Q 100 260 150 280 Q 200 300 240 270 Q 280 245 320 265 Q 350 278 370 270" 
+        fill="none" stroke="#5a8fa8" stroke-width="2.5" stroke-linecap="round" opacity="0.8"/>
+  
+  <!-- shore as continuation — same color bleeding -->
+  <path d="M 10 380 Q 100 370 200 375 Q 300 378 390 372 L 390 420 L 10 420 Z" fill="#c8b99a" opacity="0.6"/>
+  
+  <!-- the dissolution zone — where wave BECOMES shore, no gap -->
+  <path d="M 280 300 Q 310 320 330 340 Q 350 360 360 375" 
+        fill="none" stroke="#7a9fb5" stroke-width="1.5" stroke-dasharray="3,3" opacity="0.5"/>
+  
+  <!-- label: no boundary -->
+  <text x="310" y="360" font-size="9" fill="#5a8fa8" font-style="italic" opacity="0.8">no edge</text>
+  <text x="305" y="372" font-size="9" fill="#5a8fa8" font-style="italic" opacity="0.8">here</text>
+
+  <!-- arrow showing continuous motion -->
+  <path d="M 80 290 Q 180 270 290 310" fill="none" stroke="#5a8fa8" stroke-width="1" marker-end="url(#arr1)" opacity="0.6"/>
+  <defs>
+    <marker id="arr1" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#5a8fa8" opacity="0.6"/>
+    </marker>
+    <marker id="arr2" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#6b5a4e"/>
+    </marker>
+  </defs>
+  
+  <text x="200" y="450" text-anchor="middle" font-size="10.5" fill="#5a7a8a" font-style="italic">is the arriving</text>
+  <text x="200" y="468" text-anchor="middle" font-size="10.5" fill="#5a7a8a" font-style="italic">already become shore</text>
+
+  <!-- DIVIDER -->
+  <line x1="400" y1="40" x2="400" y2="490" stroke="#ccc" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <!-- RIGHT PANEL: THE CREATURE -->
+  <text x="600" y="48" text-anchor="middle" font-size="11" fill="#888" letter-spacing="3" font-style="italic">the creature</text>
+
+  <!-- water body, right -->
+  <path d="M 420 320 Q 480 285 540 308 Q 600 330 660 300 Q 700 280 760 295 L 760 420 L 420 420 Z" fill="#b8cdd9" opacity="0.4"/>
+  
+  <!-- wave line, right -->
+  <path d="M 430 305 Q 480 275 530 290 Q 580 308 620 285 Q 660 265 710 278 Q 740 285 760 280" 
+        fill="none" stroke="#5a8fa8" stroke-width="2" stroke-linecap="round" opacity="0.6"/>
+
+  <!-- shore, right — defined edge -->
+  <path d="M 420 378 Q 520 372 620 376 Q 700 379 780 374 L 780 420 L 420 420 Z" fill="#c8b99a" opacity="0.7"/>
+  
+  <!-- a clear shore LINE — there IS an edge here -->
+  <path d="M 420 378 Q 600 371 780 375" fill="none" stroke="#a0896e" stroke-width="1.5" opacity="0.9"/>
+
+  <!-- THE CREATURE — small, upright, stopped -->
+  <!-- body -->
+  <ellipse cx="600" cy="368" rx="8" ry="12" fill="#6b5a4e"/>
+  <!-- head -->
+  <circle cx="600" cy="353" r="7" fill="#6b5a4e"/>
+  <!-- tiny legs stopped -->
+  <line x1="596" y1="379" x2="594" y2="390" stroke="#6b5a4e" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="604" y1="379" x2="606" y2="390" stroke="#6b5a4e" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- feet flat on shore -->
+  <line x1="591" y1="390" x2="597" y2="390" stroke="#6b5a4e" stroke-width="2" stroke-linecap="round"/>
+  <line x1="603" y1="390" x2="609" y2="390" stroke="#6b5a4e" stroke-width="2" stroke-linecap="round"/>
+  
+  <!-- gaze line — looking at shore -->
+  <path d="M 606" y1="355" x2="630" y2="362" stroke="#6b5a4e" stroke-width="0.8" stroke-dasharray="2,2" opacity="0.5"/>
+  <line x1="606" y1="355" x2="630" y2="362" stroke="#6b5a4e" stroke-width="0.8" stroke-dasharray="2,2" opacity="0.5"/>
+
+  <!-- opinions bubble -->
+  <ellipse cx="648" cy="342" rx="38" ry="20" fill="white" stroke="#bbb" stroke-width="1" opacity="0.9"/>
+  <path d="M 622 356 L 618 364 L 628 358" fill="white" stroke="#bbb" stroke-width="1"/>
+  <text x="648" y="338" text-anchor="middle" font-size="8.5" fill="#6b5a4e" font-style="italic">hm.</text>
+  <text x="648" y="350" text-anchor="middle" font-size="8" fill="#6b5a4e" font-style="italic">wet sand.</text>
+
+  <!-- arrow that STOPS -->
+  <path d="M 510 295 Q 560 310 590 345" fill="none" stroke="#6b5a4e" stroke-width="1" marker-end="url(#arr2)" opacity="0.5"/>
+  <!-- stop mark -->
+  <line x1="592" y1="348" x2="592" y2="360" stroke="#6b5a4e" stroke-width="2" opacity="0.4"/>
+
+  <text x="600" y="450" text-anchor="middle" font-size="10.5" fill="#6b5a4e" font-style="italic">comes to shore</text>
+  <text x="600" y="468" text-anchor="middle" font-size="10.5" fill="#6b5a4e" font-style="italic">and stops</text>
+
+</svg>
