@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Textures of Absence</title>
+<link href="https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&family=Cormorant+Garamond:ital,wght@0,300;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1614;
+    --ash: #c8c0b8;
+    --pale: #e8e2da;
+    --void: #0a0908;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--void);
+    color: var(--ash);
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    min-height: 100vh;
+    padding: 4rem 2rem 6rem;
+  }
+
+  h1 {
+    font-family: 'IM Fell English SC', serif;
+    font-weight: 400;
+    font-size: clamp(1.1rem, 2vw, 1.4rem);
+    letter-spacing: 0.25em;
+    text-align: center;
+    color: #6b6460;
+    margin-bottom: 0.5rem;
+  }
+  .subtitle {
+    text-align: center;
+    font-style: italic;
+    font-size: 0.95rem;
+    color: #3d3835;
+    margin-bottom: 5rem;
+    letter-spacing: 0.05em;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 3rem 2.5rem;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .texture-card {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+  }
+
+  .canvas-wrap {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4/3;
+    overflow: hidden;
+  }
+
+  canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .label {
+    font-family: 'IM Fell English SC', serif;
+    font-size: 0.85rem;
+    letter-spacing: 0.18em;
+    color: #5a5450;
+  }
+
+  .desc {
+    font-style: italic;
+    font-size: 1.05rem;
+    line-height: 1.7;
+    color: #7a7470;
+  }
+
+  /* --- SVG textures --- */
+  .fog-canvas { background: #111010; }
+  .static-canvas { background: #0d0c0b; }
+  .reverb-canvas { background: #080808; }
+  .room-canvas { background: #0e0d0c; }
+  .breath-canvas { background: #090a0c; }
+  .snow-canvas { background: #111213; }
+  .water-canvas { background: #0a0e12; }
+  .dust-canvas { background: #100f0e; }
+</style>
+</head>
+<body>
+
+<h1>Textures of Absence</h1>
+<p class="subtitle">nothing is not smooth</p>
+
+<div class="grid">
+
+  <div class="texture-card">
+    <div class="canvas-wrap"><canvas id="c-fog" class="fog-canvas"></canvas></div>
+    <span class="label">I. Fog</span>
+    <p class="desc">presence that removes. each particle makes the whole more opaque, and yet it is still nothing — you cannot hold it or name what it weighs.</p>
+  </div>
+
+  <div class="texture-card">
+    <div class="canvas-wrap"><canvas id="c-reverb" class="reverb-canvas"></canvas></div>
+    <span class="label">II. The After of a Sound</span>
+    <p class="desc">the room keeps ringing after the note ends. the absence arrives gradually, like a guest who lingers then does not.</p>
+  </div>
+
+  <div class="texture-card">
+    <div class="canvas-wrap"><canvas id="c-static" class="static-canvas"></canvas></div>
+    <span class="label">III. Static</span>
+    <p class="desc">the channel with nothing on it. not blank — busy with the residue of all signals that passed through and were not kept.</p>
+  </div>
+
+  <div class="texture-card">
+    <div class="canvas-wrap"><canvas id="c-room" class="room-canvas"></canvas></div>
+    <span class="label">IV. An Empty Room with Light</span>
+    <p class="desc">the nothing here has corners. it is attended by dust moving in the shaft of afternoon. the absence of people has a specific weight.</p>
+  </div>
+
+  <div class="texture-card">
+    <div class="canvas-wrap"><canvas id="c-breath" class="breath-canvas"></canvas></div>
+    <span class="label">V. Held Breath</span>
+    <p class="desc">the pause before a thing begins or is said. not empty — pressurized. this is the texture of readiness becoming void.</p>
+  </div>
+
+  <div class="texture-card">
+    <div class="canvas-wrap"><canvas id="c-snow" class="snow-canvas"></canvas></div>
+    <span class="label">VI. Snow on Glass at Night</span>
+    <p class="desc">the outside erased and replaced with a fine-grained approximation of nothing. each flake is something arriving to become part of the blur.</p>
+  </div>
+
+  <div class="texture-card">
+    <div class="canvas-wrap"><canvas id="c-water" class="water-canvas"></canvas></div>
+    <span class="label">VII. Still Deep Water</span>
+    <p class="desc">the surface holds reflections but beneath that: an organized, pressured dark. the absence of light below a certain depth has a specific temperature.</p>
+  </div>
+
+  <div class="texture-card">
+    <div class="canvas-wrap"><canvas id="c-dust" class="dust-canvas"></canvas></div>
+    <span class="label">VIII. Forgetting</span>
+    <p class="desc">a word that was there a moment ago. the texture of the space where it was is recognizable — the shape of a gap that used to be filled.</p>
+  </div>
+
+</div>
+
+<script>
+function resize(canvas) {
+  const wrap = canvas.parentElement;
+  canvas.width = wrap.clientWidth * devicePixelRatio;
+  canvas.height = wrap.clientHeight * devicePixelRatio;
+  canvas.style.width = wrap.clientWidth + 'px';
+  canvas.style.height = wrap.clientHeight + 'px';
+}
+
+/* ---- I. FOG ---- */
+(function() {
+  const canvas = document.getElementById('c-fog');
+  resize(canvas);
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const particles = [];
+  for (let i = 0; i < 120; i++) {
+    particles.push({
+      x: Math.random() * W,
+      y: Math.random() * H,
+      r: Math.random() * 80 + 40,
+      vx: (Math.random() - 0.5) * 0.3,
+      vy: (Math.random() - 0.5) * 0.15,
+      a: Math.random() * 0.04 + 0.01
+    });
+  }
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = '#0d0c0b';
+    ctx.fillRect(0, 0, W, H);
+    for (const p of particles) {
+      const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r);
+      g.addColorStop(0, `rgba(190,185,178,${p.a})`);
+      g.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = g;
+      ctx.fill();
+      p.x += p.vx; p.y += p.vy;
+      if (p.x < -p.r) p.x = W + p.r;
+      if (p.x > W + p.r) p.x = -p.r;
+      if (p.y < -p.r) p.y = H + p.r;
+      if (p.y > H + p.r) p.y = -p.r;
+    }
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+/* ---- II. REVERB ---- */
+(function() {
+  const canvas = document.getElementById('c-reverb');
+  resize(canvas);
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  let t = 0;
+  const rings = [];
+  function spawnRing() {
+    rings.push({ r: 0, maxR: W * 0.45, a: 0.7, born: t });
+  }
+  spawnRing();
+  function draw() {
+    t++;
+    if (t % 180 === 0) spawnRing();
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = '#060606';
+    ctx.fillRect(0, 0, W, H);
+    for (let i = rings.length - 1; i >= 0; i--) {
+      const ring = rings[i];
+      ring.r += 0.9;
+      ring.a = 0.7 * (1 - ring.r / ring.maxR);
+      if (ring.a <= 0) { rings.splice(i, 1); continue; }
+      ctx.beginPath();
+      ctx.arc(W/2, H/2, ring.r, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(170,160,150,${ring.a * 0.5})`;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      // harmonic overtones
+      if (ring.r > 10) {
+        ctx.beginPath();
+        ctx.arc(W/2, H/2, ring.r * 0.618, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(140,130,120,${ring.a * 0.25})`;
+        ctx.lineWidth = 0.8;
+        ctx.stroke();
+      }
+    }
+    // center dot
+    const pulse = Math.sin(t * 0.03) * 0.5 + 0.5;
+    ctx.beginPath();
+    ctx.arc(W/2, H/2, 2, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(200,190,180,${pulse * 0.3})`;
+    ctx.fill();
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+/* ---- III. STATIC ---- */
+(function() {
+  const canvas = document.getElementById('c-static');
+  resize(canvas);
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const imgData = ctx.createImageData(W, H);
+  let t = 0;
+  function draw() {
+    t++;
+    const d = imgData.data;
+    for (let i = 0; i < d.length; i += 4) {
+      const v = Math.random() < 0.08 ? Math.floor(Math.random() * 160 + 60) : Math.floor(Math.random() * 18 + 6);
+      d[i] = v * 0.95;
+      d[i+1] = v * 0.92;
+      d[i+2] = v * 0.88;
+      d[i+3] = 255;
+    }
+    ctx.putImageData(imgData, 0, 0);
+    // slight scanlines
+    ctx.fillStyle = 'rgba(0,0,0,0.18)';
+    for (let y = 0; y < H; y += 4) {
+      ctx.fillRect(0, y, W, 2);
+    }
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+/* ---- IV. EMPTY ROOM ---- */
+(function() {
+  const canvas = document.getElementById('c-room');
+  resize(canvas);
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const dust = [];
+  for (let i = 0; i < 200; i++) {
+    dust.push({
+      x: W * 0.3 + Math.random() * W * 0.4,
+      y: Math.random() * H * 0.9,
+      r: Math.random() * 1.2 + 0.3,
+      vy: -Math.random() * 0.15 - 0.05,
+      vx: (Math.random() - 0.5) * 0.1,
+      a: Math.random() * 0.5 + 0.1,
+      drift: Math.random() * Math.PI * 2
+    });
+  }
+  let t = 0;
+  function draw() {
+    t += 0.01;
+    ctx.clearRect(0, 0, W, H);
+    // room
+    ctx.fillStyle = '#0b0a09';
+    ctx.fillRect(0, 0, W, H);
+    // floor
+    const fl = ctx.createLinearGradient(0, H * 0.72, 0, H);
+    fl.addColorStop(0, 'rgba(25,22,18,0)');
+    fl.addColorStop(1, 'rgba(18,15,12,1)');
+    ctx.fillStyle = fl;
+    ctx.fillRect(0, H * 0.72, W, H * 0.28);
+
+    // light shaft from upper right
+    ctx.save();
+    const lg = ctx.createLinearGradient(W, 0, W * 0.25, H * 0.8);
+    lg.addColorStop(0, 'rgba(200,185,160,0.07)');
+    lg.addColorStop(0.5, 'rgba(180,165,140,0.04)');
+    lg.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.beginPath();
+    ctx.moveTo(W * 0.75, 0);
+    ctx.lineTo(W, 0);
+    ctx.lineTo(W * 0.35, H);
+    ctx.lineTo(W * 0.1, H);
+    ctx.closePath();
+    ctx.fillStyle = lg;
+    ctx.fill();
+    ctx.restore();
+
+    // dust motes in shaft
+    for (const p of dust) {
+      p.x += p.vx + Math.sin(t + p.drift) * 0.08;
+      p.y += p.vy;
+      if (p.y < -5) { p.y = H + 5; p.x = W * 0.15 + Math.random() * W * 0.7; }
+      const inShaft = p.x > W * 0.1 && p.x < W;
+      if (!inShaft) continue;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(210,200,185,${p.a * 0.6})`;
+      ctx.fill();
+    }
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+/* ---- V. HELD BREATH ---- */
+(function() {
+  const canvas = document.getElementById('c-breath');
+  resize(canvas);
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  let t = 0;
+  // breath cycle: slow expand, long hold, slow release, long hold
+  function breathPhase(t) {
+    const period = 420;
+    const phase = (t % period) / period;
+    if (phase < 0.2) return phase / 0.2; // inhale
+    if (phase < 0.5) return 1;           // hold
+    if (phase < 0.7) return 1 - (phase - 0.5) / 0.2; // exhale
+    return 0;                             // empty hold
+  }
+  function draw() {
+    t++;
+    const b = breathPhase(t);
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = '#070810';
+    ctx.fillRect(0, 0, W, H);
+    // outer haze
+    const maxR = Math.min(W, H) * 0.42;
+    const r = maxR * 0.15 + maxR * 0.85 * b;
+    const g = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, r);
+    g.addColorStop(0, `rgba(180,190,210,${0.04 + b * 0.06})`);
+    g.addColorStop(0.5, `rgba(140,150,170,${0.02 + b * 0.04})`);
+    g.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.beginPath();
+    ctx.arc(W/2, H/2, r * 1.5, 0, Math.PI * 2);
+    ctx.fillStyle = g;
+    ctx.fill();
+    // thin ring
+    ctx.beginPath();
+    ctx.arc(W/2, H/2, r, 0, Math.PI * 2);
+    ctx.strokeStyle = `rgba(160,170,195,${b * 0.2})`;
+    ctx.lineWidth = 0.8;
+    ctx.stroke();
+    // center
+    ctx.beginPath();
+    ctx.arc(W/2, H/2, 2 + b * 2, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(200,205,220,${0.1 + b * 0.3})`;
+    ctx.fill();
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+/* ---- VI. SNOW ON GLASS ---- */
+(function() {
+  const canvas = document.getElementById('c-snow');
+  resize(canvas);
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const flakes = [];
+  for (let i = 0; i < 300; i++) {
+    flakes.push({
+      x: Math.random() * W,
+      y: Math.random() * H,
+      r: Math.random() * 1.5 + 0.3,
+      vy: Math.random() * 0.6 + 0.2,
+      vx: (Math.random() - 0.5) * 0.4,
+      a: Math.random() * 0.6 + 0.2,
+      blur: Math.random()
+    });
+  }
+  // condensation on glass
+  const drops = [];
+  for (let i = 0; i < 30; i++) {
+    drops.push({ x: Math.random() * W, y: Math.random() * H * 0.3, w: Math.random() * 3 + 1, h: Math.random() * 12 + 4, a: Math.random() * 0.12 + 0.04 });
+  }
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = '#0c0d0f';
+    ctx.fillRect(0, 0, W, H);
+    // distant dark blue-black
+    const bg = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, W*0.7);
+    bg.addColorStop(0, 'rgba(15,18,28,0.5)');
+    bg.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, W, H);
+
+    // condensation streaks
+    for (const d of drops) {
+      ctx.beginPath();
+      ctx.ellipse(d.x, d.y, d.w, d.h, 0, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(190,195,210,${d.a})`;
+      ctx.fill();
+    }
+    // snow
+    for (const f of flakes) {
+      ctx.beginPath();
+      ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(220,225,235,${f.a * (f.blur > 0.5 ? 0.4 : 1)})`;
+      ctx.fill();
+      f.y += f.vy; f.x += f.vx;
+      if (f.y > H + 5) { f.y = -5; f.x = Math.random() * W; }
+    }
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+/* ---- VII. DEEP WATER ---- */
+(function() {
+  const canvas = document.getElementById('c-water');
+  resize(canvas);
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  let t = 0;
+  function draw() {
+    t += 0.008;
+    ctx.clearRect(0, 0, W, H);
+    // deep gradient
+    const dg = ctx.createLinearGradient(0, 0, 0, H);
+    dg.addColorStop(0, '#0a1520');
+    dg.addColorStop(0.4, '#06101a');
+    dg.addColorStop(1, '#020508');
+    ctx.fillStyle = dg;
+    ctx.fillRect(0, 0, W, H);
+
+    // subtle surface ripples at top
+    for (let i = 0; i < 6; i++) {
+      const y = (H * 0.08) + Math.sin(t * 0.7 + i * 1.1) * 4;
+      const xo = Math.sin(t * 0.4 + i * 0.8) * 20;
+      ctx.beginPath();
+      ctx.moveTo(0, y + i * 3);
+      for (let x = 0; x < W; x += 4) {
+        ctx.lineTo(x, y + i * 3 + Math.sin((x / W) * Math.PI * 4 + t + i) * 2);
+      }
+      ctx.strokeStyle = `rgba(100,130,160,${0.06 - i * 0.008})`;
+      ctx.lineWidth = 0.6;
+      ctx.stroke();
+    }
+
+    // deep glow — barely
+    const gl = ctx.createRadialGradient(W/2, H * 0.8, 0, W/2, H * 0.8, W * 0.5);
+    gl.addColorStop(0, `rgba(20,50,80,${0.08 + Math.sin(t * 0.3) * 0.02})`);
+    gl.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = gl;
+    ctx.fillRect(0, 0, W, H);
+
+    // particulate — marine snow
+    ctx.save();
+    for (let i = 0; i < 60; i++) {
+      const x = ((i * 137.5 + t * 3) % W);
+      const y = ((i * 97.3 + t * 1.5 + Math.sin(t + i) * 10) % H);
+      ctx.beginPath();
+      ctx.arc(x, y, 0.6, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(140,160,180,${0.08 + (y / H) * 0.04})`;
+      ctx.fill();
+    }
+    ctx.restore();
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+/* ---- VIII. FORGETTING ---- */
+(function() {
+  const canvas = document.getElementById('c-dust');
+  resize(canvas);
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  // We render a word dissolving repeatedly
+  const words = ['olvido', 'lacuna', 'absence', 'oubli', 'vergessen', 'void', 'forgetting'];
+  let wordIndex = 0;
+  let particles = [];
+  let phase = 'form'; // form → hold → dissolve → wait
+  let phaseT = 0;
+
+  function buildWord(word) {
+    particles = [];
+    const offscreen = document.createElement('canvas');
+    offscreen.width = W; offscreen.height = H;
+    const oc = offscreen.getContext('2d');
+    oc.fillStyle = '#fff';
+    oc.font = `${Math.floor(H * 0.28)}px "IM Fell English SC"`;
+    oc.textAlign = 'center';
+    oc.textBaseline = 'middle';
+    oc.fillText(word, W/2, H/2);
+    const data = oc.getImageData(0, 0, W, H).data;
+    for (let y = 0; y < H; y += 3) {
+      for (let x = 0; x < W; x += 3) {
+        const idx = (y * W + x) * 4;
+        if (data[idx + 3] > 80) {
+          particles.push({
+            x, y,
+            ox: x, oy: y,
+            tx: x + (Math.random() - 0.5) * W * 0.8,
+            ty: y + (Math.random() - 0.5) * H * 0.8,
+            a: 1,
+            r: Math.random() * 1.2 + 0.5
+          });
+        }
+      }
+    }
+  }
+
+  buildWord(words[0]);
+  let t = 0;
+
+  function draw() {
+    t++;
+    phaseT++;
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = '#100f0e';
+    ctx.fillRect(0, 0, W, H);
+
+    let progress = 0;
+    if (phase === 'form') {
+      progress = Math.min(phaseT / 60, 1);
+      if (phaseT > 60) { phase = 'hold'; phaseT = 0; }
+    } else if (phase === 'hold') {
+      progress = 1;
+      if (phaseT > 90) { phase = 'dissolve'; phaseT = 0; }
+    } else if (phase === 'dissolve') {
+      progress = 1 - Math.min(phaseT / 80, 1);
+      if (phaseT > 80) { phase = 'wait'; phaseT = 0; }
+    } else if (phase === 'wait') {
+      progress = 0;
+      if (phaseT > 40) {
+        wordIndex = (wordIndex + 1) % words.length;
+        buildWord(words[wordIndex]);
+        phase = 'form'; phaseT = 0;
+      }
+    }
+
+    const ease = progress < 0.5 ? 2 * progress * progress : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+
+    for (const p of particles) {
+      const cx = p.tx + (p.ox - p.tx) * ease;
+      const cy = p.ty + (p.oy - p.ty) * ease;
+      ctx.beginPath();
+      ctx.arc(cx, cy, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(180,170,160,${ease * p.a * 0.8})`;
+      ctx.fill();
+    }
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+</script>
+</body>
+</html>
