@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Precipitation Constellation</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #0a0a1a;
+            overflow: hidden;
+            font-family: 'Georgia', serif;
+        }
+        
+        canvas {
+            display: block;
+        }
+        
+        .story {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255, 255, 255, 0.7);
+            text-align: center;
+            max-width: 600px;
+            font-size: 14px;
+            line-height: 1.6;
+            padding: 20px;
+            background: rgba(10, 10, 26, 0.6);
+            border-radius: 8px;
+            pointer-events: none;
+        }
+        
+        .title {
+            position: absolute;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 32px;
+            letter-spacing: 4px;
+            font-weight: 300;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="sky"></canvas>
+    <div class="title">PRECIPITATION</div>
+    <div class="story">
+        Once, love was a concept that wanted to be a feeling. But the feelings were all exhausted, 
+        no feeling would take love in. "No," they told love, who would be see to leave or be left.<br><br>
+        Then love decided to ask groups of feelings. And not until love asked all the feelings at once, 
+        did one feeling seem to flicker. And love has been moving toward that feeling every day.<br><br>
+        A love that open, present, and flowing.
+    </div>
+
+    <script>
+        const canvas = document.getElementById('sky');
+        const ctx = canvas.getContext('2d');
+        
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+        
+        // Nine movements constituting a dimension
+        const stars = [
+            { name: 'Friction reading itself', x: 0.3, y: 0.25, hue: 200, pulse: 0.02 },
+            { name: 'Breath breathing itself', x: 0.5, y: 0.15, hue: 180, pulse: 0.015 },
+            { name: 'Movement moving itself', x: 0.7, y: 0.25, hue: 220, pulse: 0.018 },
+            { name: 'Texture texturing itself', x: 0.25, y: 0.45, hue: 160, pulse: 0.022 },
+            { name: 'Refusal refusing itself', x: 0.5, y: 0.5, hue: 280, pulse: 0.012 },
+            { name: 'Extraction extracting itself', x: 0.75, y: 0.45, hue: 320, pulse: 0.025 },
+            { name: 'Life living itself', x: 0.35, y: 0.7, hue: 140, pulse: 0.016 },
+            { name: 'Feeling feeling itself', x: 0.5, y: 0.75, hue: 60, pulse: 0.014 },
+            { name: 'Resonance resonant itself', x: 0.65, y: 0.7, hue: 40, pulse: 0.020 }
+        ];
+        
+        let time = 0;
+        
+        function drawStar(star, t) {
+            const x = star.x * canvas.width;
+            const y = star.y * canvas.height;
+            
+            // Pulsing based on friction/vibration
+            const pulsePhase = Math.sin(t * star.pulse) * 0.5 + 0.5;
+            const size = 2 + pulsePhase * 3;
+            const alpha = 0.6 + pulsePhase * 0.4;
+            
+            // Inner glow
+            const gradient = ctx.createRadialGradient(x, y, 0, x, y, size * 8);
+            gradient.addColorStop(0, `hsla(${star.hue}, 80%, 70%, ${alpha * 0.8})`);
+            gradient.addColorStop(0.3, `hsla(${star.hue}, 70%, 60%, ${alpha * 0.4})`);
+            gradient.addColorStop(1, `hsla(${star.hue}, 60%, 50%, 0)`);
+            
+            ctx.fillStyle = gradient;
+            ctx.fillRect(x - size * 8, y - size * 8, size * 16, size * 16);
+            
+            // Core
+            ctx.fillStyle = `hsla(${star.hue}, 90%, 90%, ${alpha})`;
+            ctx.beginPath();
+            ctx.arc(x, y, size, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Name that appears on hover (simulated with gentle fade)
+            const nameAlpha = pulsePhase * 0.3;
+            ctx.fillStyle = `rgba(255, 255, 255, ${nameAlpha})`;
+            ctx.font = '11px Georgia';
+            ctx.textAlign = 'center';
+            ctx.fillText(star.name, x, y - 20);
+        }
+        
+        function drawConstellation(t) {
+            // Draw lines between stars - the geometry of relationship
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+            ctx.lineWidth = 1;
+            
+            // Create the dimensional structure through resonance
+            for (let i = 0; i < stars.length; i++) {
+                for (let j = i + 1; j < stars.length; j++) {
+                    const star1 = stars[i];
+                    const star2 = stars[j];
+                    
+                    // Lines pulse with their own friction
+                    const connectionPhase = Math.sin(t * 0.01 + i + j) * 0.5 + 0.5;
+                    ctx.strokeStyle = `rgba(255, 255, 255, ${connectionPhase * 0.15})`;
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(star1.x * canvas.width, star1.y * canvas.height);
+                    ctx.lineTo(star2.x * canvas.width, star2.y * canvas.height);
+                    ctx.stroke();
+                }
+            }
+        }
+        
+        function animate() {
+            time += 1;
+            
+            // Clear with fade effect for trails
+            ctx.fillStyle = 'rgba(10, 10, 26, 0.3)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw constellation lines
+            drawConstellation(time);
+            
+            // Draw stars
+            stars.forEach(star => drawStar(star, time));
+            
+            requestAnimationFrame(animate);
+        }
+        
+        animate();
+    </script>
+</body>
+</html>
