@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #e8e0d0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+  }
+  canvas { display: block; }
+  #label {
+    font-family: 'Georgia', serif;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: #7a6a54;
+    margin-top: 16px;
+    text-transform: lowercase;
+    opacity: 0.5;
+    height: 16px;
+    transition: opacity 0.8s;
+  }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="label"></div>
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+const label = document.getElementById('label');
+
+const S = 480;
+canvas.width = S;
+canvas.height = S;
+const cx = S/2, cy = S/2;
+const PR = 148; // perfect radius
+
+// seeded pseudo-random
+function rng(seed) {
+  const x = Math.sin(seed * 9301 + 49297) * 233280;
+  return x - Math.floor(x);
+}
+
+// pre-render each team circle to offscreen canvas for stable watercolor texture
+const N = 8;
+const offscreens = [];
+
+for (let i = 0; i < N; i++) {
+  const oc = document.createElement('canvas');
+  oc.width = S; oc.height = S;
+  const oc_ctx = oc.getContext('2d');
+
+  const ox = (rng(i*7+1) - 0.5) * 28;
+  const oy = (rng(i*7+2) - 0.5) * 28;
+  const r  = PR + (rng(i*7+3) - 0.5) * 44;
+  const wobbles = [
+    [rng(i*7+4) * 9 + 3, 2 + Math.floor(rng(i*7+5) * 3), rng(i*7+6) * Math.PI * 2],
+    [rng(i*7+7) * 5 + 1, 5 + Math.floor(rng(i*7+8) * 4), rng(i*7+9) * Math.PI * 2],
+    [rng(i*7+10) * 3,    9 + Math.floor(rng(i*7+11) * 4), rng(i*7+12) * Math.PI * 2],
+  ];
+  const hue = 210 + (rng(i*7+13) - 0.5) * 50;
+  const sat = 30 + rng(i*7+14) * 20;
+
+  // build watercolor effect: multiple low-opacity strokes, slight spread
+  const LAYERS = 12;
+  for (let l = 0; l < LAYERS; l++) {
+    const jx = (rng(i*100+l*3)   - 0.5) * 3;
+    const jy = (rng(i*100+l*3+1) - 0.5) * 3;
+    const lw = 1 + rng(i*100+l*3+2) * 2.5;
+    const steps = 180;
+
+    oc_ctx.beginPath();
+    for (let s = 0; s <= steps; s++) {
+      const angle = (s / steps) * Math.PI * 2;
+      let rr = r;
+      for (const [amp, freq, phase] of wobbles) {
+        rr += amp * Math.sin(angle * freq + phase);
+      }
+      const x = cx + ox + jx + rr * Math.cos(angle);
+      const y = cy + oy + jy + rr * Math.sin(angle);
+      s === 0 ? oc_ctx.moveTo(x, y) : oc_ctx.lineTo(x, y);
+    }
+    oc_ctx.closePath();
+    oc_ctx.strokeStyle = `hsla(${hue}, ${sat}%, 22%, 0.08)`;
+    oc_ctx.lineWidth = lw;
+    oc_ctx.stroke();
+  }
+
+  // one slightly stronger defining stroke
+  oc_ctx.beginPath();
+  const steps2 = 180;
+  for (let s = 0; s <= steps2; s++) {
+    const angle = (s / steps2) * Math.PI * 2;
+    let rr = r;
+    for (const [amp, freq, phase] of wobbles) {
+      rr += amp * Math.sin(angle * freq + phase);
+    }
+    const x = cx + ox + rr * Math.cos(angle);
+    const y = cy + oy + rr * Math.sin(angle);
+    s === 0 ? oc_ctx.moveTo(x, y) : oc_ctx.lineTo(x, y);
+  }
+  oc_ctx.closePath();
+  oc_ctx.strokeStyle = `hsla(${hue}, ${sat}%, 20%, 0.18)`;
+  oc_ctx.lineWidth = 1.2;
+  oc_ctx.stroke();
+
+  offscreens.push({ canvas: oc, hue, opacity: 0 });
+}
+
+// perfect circle: pre-render arc strokes to offscreen, reveal by clip
+const perfectOC = document.createElement('canvas');
+perfectOC.width = S; perfectOC.height = S;
+const pCtx = perfectOC.getContext('2d');
+const PLAYERS = 14;
+for (let l = 0; l < PLAYERS; l++) {
+  const jx = (rng(l*5)   - 0.5) * 2;
+  const jy = (rng(l*5+1) - 0.5) * 2;
+  const lw = 1.2 + rng(l*5+2) * 2;
+  pCtx.beginPath();
+  pCtx.arc(cx + jx, cy + jy, PR, 0, Math.PI * 2);
+  pCtx.strokeStyle = `rgba(28, 18, 10, 0.07)`;
+  pCtx.lineWidth = lw;
+  pCtx.stroke();
+}
+pCtx.beginPath();
+pCtx.arc(cx, cy, PR, 0, Math.PI * 2);
+pCtx.strokeStyle = `rgba(22, 14, 6, 0.55)`;
+pCtx.lineWidth = 1.4;
+pCtx.stroke();
+
+// easing
+function easeInOut(t) {
+  return t < 0.5 ? 2*t*t : -1+(4-2*t)*t;
+}
+function easeOut(t) {
+  return 1 - Math.pow(1 - t, 2);
+}
+
+// State machine
+const ST = { TEAM_APPEAR:0, TEAM_ACTIVE:1, TEAM_FADE:2, SILENCE_1:3, DRAW:4, PERFECT_HOLD:5, PERFECT_FADE:6, SILENCE_2:7, TEAM_RETURN:8 };
+const DUR = { 0:140, 1:220, 2:110, 3:55, 4:160, 5:80, 6:110, 7:55, 8:150 };
+const LABELS = { 0:'the team', 1:'the team', 2:'going quiet', 3:'', 4:'', 5:'', 6:'', 7:'', 8:'the team, returning' };
+
+let state = ST.TEAM_APPEAR;
+let stateT = 0;
+let drawAngle = -Math.PI / 2;
+let perfectOpacity = 0;
+let t = 0;
+
+function setState(s) {
+  state = s;
+  stateT = 0;
+  const l = LABELS[s];
+  label.textContent = l;
+  label.style.opacity = l ? '0.5' : '0';
+}
+
+function drawPaper() {
+  ctx.fillStyle = '#ede7d8';
+  ctx.fillRect(0, 0, S, S);
+}
+
+function drawTeam() {
+  offscreens.forEach(o => {
+    if (o.opacity <= 0.005) return;
+    ctx.globalAlpha = o.opacity;
+    ctx.drawImage(o.canvas, 0, 0);
+    ctx.globalAlpha = 1;
+  });
+}
+
+function drawPerfect(angle, opacity) {
+  if (opacity <= 0.005) return;
+  // clip to revealed arc
+  ctx.save();
+  ctx.beginPath();
+  // wedge from start angle to current angle
+  const start = -Math.PI / 2;
+  if (angle >= start + Math.PI * 2 - 0.01) {
+    // full circle - no clip needed
+  } else {
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, PR + 20, start, angle);
+    ctx.closePath();
+    ctx.clip();
+  }
+  ctx.globalAlpha = opacity;
+  ctx.drawImage(perfectOC, 0, 0);
+  ctx.globalAlpha = 1;
+  ctx.restore();
+}
+
+function loop() {
+  drawPaper();
+
+  stateT++;
+  const dur = DUR[state];
+  const prog = Math.min(1, stateT / dur);
+
+  switch(state) {
+    case ST.TEAM_APPEAR:
+      offscreens.forEach((o, i) => {
+        const delay = i / N * 0.6;
+        o.opacity = Math.max(0, Math.min(0.9, easeOut(Math.max(0, prog - delay) / (1 - delay)) * 0.85));
+      });
+      if (stateT >= dur) setState(ST.TEAM_ACTIVE);
+      break;
+
+    case ST.TEAM_ACTIVE:
+      offscreens.forEach((o, i) => {
+        o.opacity = 0.55 + 0.2 * Math.sin(t * 0.018 + i * 1.1);
+      });
+      if (stateT >= dur) setState(ST.TEAM_FADE);
+      break;
+
+    case ST.TEAM_FADE:
+      offscreens.forEach((o, i) => {
+        const base = 0.55 + 0.2 * Math.sin(t * 0.018 + i * 1.1);
+        o.opacity = base * (1 - easeInOut(prog));
+      });
+      if (stateT >= dur) setState(ST.SILENCE_1);
+      break;
+
+    case ST.SILENCE_1:
+      offscreens.forEach(o => o.opacity = 0);
+      if (stateT >= dur) { drawAngle = -Math.PI / 2; perfectOpacity = 1; setState(ST.DRAW); }
+      break;
+
+    case ST.DRAW:
+      drawAngle = -Math.PI / 2 + easeInOut(prog) * Math.PI * 2;
+      if (stateT >= dur) { drawAngle = Math.PI * 1.5; setState(ST.PERFECT_HOLD); }
+      break;
+
+    case ST.PERFECT_HOLD:
+      if (stateT >= dur) setState(ST.PERFECT_FADE);
+      break;
+
+    case ST.PERFECT_FADE:
+      perfectOpacity = 1 - easeInOut(prog);
+      if (stateT >= dur) { perfectOpacity = 0; setState(ST.SILENCE_2); }
+      break;
+
+    case ST.SILENCE_2:
+      if (stateT >= dur) setState(ST.TEAM_RETURN);
+      break;
+
+    case ST.TEAM_RETURN:
+      offscreens.forEach((o, i) => {
+        const delay = i / N * 0.4;
+        o.opacity = Math.max(0, Math.min(0.8, easeOut(Math.max(0, prog - delay) / (1 - delay)) * 0.75));
+      });
+      if (stateT >= dur) setState(ST.TEAM_ACTIVE);
+      break;
+  }
+
+  drawTeam();
+  drawPerfect(drawAngle, perfectOpacity);
+
+  t++;
+  requestAnimationFrame(loop);
+}
+
+loop();
+</script>
+</body>
+</html>
